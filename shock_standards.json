@@ -1,0 +1,58 @@
+{
+  "directions": {
+    "up": {
+      "label": "Up",
+      "axis": 2,
+      "sign": 1
+    },
+    "down": {
+      "label": "Down",
+      "axis": 2,
+      "sign": -1
+    },
+    "right": {
+      "label": "Right",
+      "axis": 1,
+      "sign": 1
+    },
+    "left": {
+      "label": "Left",
+      "axis": 1,
+      "sign": -1
+    },
+    "front": {
+      "label": "Front",
+      "axis": 3,
+      "sign": 1
+    },
+    "back": {
+      "label": "Back",
+      "axis": 3,
+      "sign": -1
+    }
+  },
+  "standards": [
+    {
+      "name": "Reference",
+      "description": "Seed data from Ali_40kg_Shock_1_up reference case.",
+      "weight_classes": [
+        {
+          "name": "40kg_up_reference",
+          "job_prefix": "Ali_40kg_Shock_1",
+          "velocity": 4315.0,
+          "acceleration": 40.0
+        }
+      ]
+    }
+  ],
+  "advanced_defaults": {
+    "friction": "0.2",
+    "analysis_time": "0.015",
+    "mass_scaling_dt": "1.2e-07",
+    "field_output_interval": "50",
+    "history_interval": "0.015e-03",
+    "gravity": "9810.",
+    "abaqus_command": "abq2021",
+    "cpus": "8"
+  }
+}

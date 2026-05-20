@@ -1,0 +1,39 @@
+# Python cache and local environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Local editor and OS metadata
+.idea/
+.vscode/
+*.swp
+*.swo
+Thumbs.db
+Desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.orig
+
+# Abaqus generated databases, reports, and scratch files
+*.abq
+*.com
+*.dat
+*.fil
+*.jnl
+*.lck
+*.msg
+*.odb
+*.prt
+*.res
+*.sim
+*.sta
+*.stt
+
+# Generated shock case output
+/Ali_40kg_Shock_1_up/
