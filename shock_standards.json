@@ -33,14 +33,86 @@
   },
   "standards": [
     {
-      "name": "Reference",
+      "name": "Lenovo",
       "description": "Seed data from Ali_40kg_Shock_1_up reference case.",
       "weight_classes": [
         {
-          "name": "40kg_up_reference",
-          "job_prefix": "Ali_40kg_Shock_1",
-          "velocity": 4315.0,
+          "name": "4kg",
+          "job_prefix": "Lenovo_4kg_Shock",
+          "velocity": 4572.0,
+          "acceleration": 50.0
+        },
+        {
+          "name": "4_12kg",
+          "job_prefix": "Lenovo_4_12kg_shock",
+          "velocity": 4242.0,
+          "acceleration": 50.0
+        },
+        {
+          "name": "12_23kg",
+          "job_prefix": "Lenovo_12_23kg_shock",
+          "velocity": 3861.0,
+          "acceleration": 50.0
+        },
+        {
+          "name": "23_32kg",
+          "job_prefix": "Lenovo_23_32kg_shock",
+          "velocity": 3861.0,
+          "acceleration": 35.0
+        },
+        {
+          "name": "32_69kg",
+          "job_prefix": "Lenovo_32_69kg_shock",
+          "velocity": 3454.0,
+          "acceleration": 35.0
+        },
+        {
+          "name": "69_107kg",
+          "job_prefix": "Lenovo_69_107kg_shock",
+          "velocity": 2995.0,
+          "acceleration": 25.0
+        }
+      ]
+    },
+    {
+      "name": "ByteDance",
+      "description": "",
+      "weight_classes": [
+        {
+          "name": "15kg",
+          "job_prefix": "ByteDance_15kg_shock",
+          "velocity": 4429.0,
           "acceleration": 40.0
+        },
+        {
+          "name": "15_30kg",
+          "job_prefix": "ByteDance_15_30kg_shock",
+          "velocity": 3962.0,
+          "acceleration": 40.0
+        },
+        {
+          "name": "30_40kg",
+          "job_prefix": "ByteDance_30_40kg_shcok",
+          "velocity": 3431.0,
+          "acceleration": 40.0
+        },
+        {
+          "name": "40_45kg",
+          "job_prefix": "ByteDance_40_45kg_shock",
+          "velocity": 3132.0,
+          "acceleration": 35.0
+        },
+        {
+          "name": "45_50kg",
+          "job_prefix": "ByteDance_45_50kg_shock",
+          "velocity": 2801.0,
+          "acceleration": 35.0
+        },
+        {
+          "name": "50kg",
+          "job_prefix": "ByteDance_50kg_shock",
+          "velocity": 2426.0,
+          "acceleration": 30.0
         }
       ]
     }
