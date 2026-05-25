@@ -115,6 +115,30 @@
           "acceleration": 30.0
         }
       ]
+    },
+    {
+      "name": "Ali",
+      "description": "",
+      "weight_classes": [
+        {
+          "name": "40kg",
+          "job_prefix": "Ali_40kg_shock",
+          "velocity": 4315.0,
+          "acceleration": 40.0
+        },
+        {
+          "name": "40_50kg",
+          "job_prefix": "Ali_40_50kg_shock",
+          "velocity": 3432.0,
+          "acceleration": 35.0
+        },
+        {
+          "name": "50kg",
+          "job_prefix": "Ali_50kg_shock",
+          "velocity": 2648.0,
+          "acceleration": 30.0
+        }
+      ]
     }
   ],
   "advanced_defaults": {
