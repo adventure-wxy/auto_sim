@@ -13,22 +13,22 @@
     "right": {
       "label": "Right",
       "axis": 1,
-      "sign": 1
+      "sign": -1
     },
     "left": {
       "label": "Left",
       "axis": 1,
-      "sign": -1
+      "sign": 1
     },
     "front": {
       "label": "Front",
       "axis": 3,
-      "sign": 1
+      "sign": -1
     },
     "back": {
       "label": "Back",
       "axis": 3,
-      "sign": -1
+      "sign": 1
     }
   },
   "standards": [
@@ -150,5 +150,101 @@
     "gravity": "9810.",
     "abaqus_command": "abq2021",
     "cpus": "8"
+  },
+  "package_drop_directions": {
+    "up": {
+      "label": "Up",
+      "axis": 2,
+      "sign": 1
+    },
+    "down": {
+      "label": "Down",
+      "axis": 2,
+      "sign": -1
+    },
+    "right": {
+      "label": "Right",
+      "axis": 1,
+      "sign": 1
+    },
+    "left": {
+      "label": "Left",
+      "axis": 1,
+      "sign": -1
+    },
+    "front": {
+      "label": "Front",
+      "axis": 3,
+      "sign": 1
+    },
+    "back": {
+      "label": "Back",
+      "axis": 3,
+      "sign": -1
+    }
+  },
+  "package_drop_advanced_defaults": {
+    "friction": "0.2",
+    "analysis_time": "0.025",
+    "mass_scaling_dt": "1.8e-07",
+    "field_output_interval": "50",
+    "history_interval": "0.015e-03",
+    "gravity": "9810.",
+    "abaqus_command": "abq2021",
+    "cpus": "8"
+  },
+  "package_drop_standards": [
+    {
+      "name": "Ali",
+      "description": "Seed data from Ali_40kg_Package_Drop_6_back reference case.",
+      "weight_classes": [
+        {
+          "name": "15kg",
+          "job_prefix": "Ali_15kg_Package_drop",
+          "velocity": 4202.0
+        },
+        {
+          "name": "15_35kg",
+          "job_prefix": "Ali_15_35kg_Package_drop",
+          "velocity": 3836.0
+        },
+        {
+          "name": "35_45kg",
+          "job_prefix": "Ali_35_45kg_Package_drop",
+          "velocity": 3431.0
+        },
+        {
+          "name": "45kg",
+          "job_prefix": "Ali_45kg_Package_drop",
+          "velocity": 2426.0
+        }
+      ]
+    }
+  ],
+  "last_run": {
+    "case_type": "Shock",
+    "model_path": "D:/CAE/AutoSim/auto_sim/model/SHOCK_Model.inp",
+    "output_root": "D:/CAE/AutoSim/auto_sim/model/",
+    "standard": "Lenovo",
+    "weight": "23_32kg",
+    "directions": [
+      "up",
+      "down"
+    ],
+    "conflict_strategy": "overwrite",
+    "submit_after_generate": true,
+    "rewrite_boundary_file": true,
+    "contact_surface_names": [],
+    "section_names": [],
+    "advanced": {
+      "friction": "0.2",
+      "analysis_time": "0.015",
+      "mass_scaling_dt": "1.2e-07",
+      "field_output_interval": "50",
+      "history_interval": "0.015e-03",
+      "gravity": "9810.",
+      "abaqus_command": "abq2021",
+      "cpus": "8"
+    }
   }
 }
