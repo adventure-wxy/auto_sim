@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -52,6 +51,14 @@ DIRECTION_WOOD_COMPONENT = {
     "down": "ud",
     "front": "fb",
     "back": "fb",
+}
+PACKAGE_DROP_COMPONENTS = {
+    "up": "UP_2D_TT0p1_STEEL",
+    "down": "DOWN_2D_TT0p1_STEEL",
+    "front": "FRONT_2D_TT0p1_STEEL",
+    "back": "BACK_2D_TT0p1_STEEL",
+    "left": "LEFT_2D_TT0p1_STEEL",
+    "right": "RIGHT_2D_TT0p1_STEEL",
 }
 
 
@@ -119,6 +126,7 @@ DEFAULT_CONFIG = {
                     "job_prefix": "Ali_40kg_Shock_1",
                     "velocity": 4315.0,
                     "acceleration": 40.0,
+                    "shock_time_ms": 11.0,
                 }
             ],
         }
@@ -138,6 +146,7 @@ class CaseSpec:
     sign: int
     velocity: float
     acceleration: float
+    shock_time_ms: float
 
 
 def ensure_config(path: Path = CONFIG_FILE) -> dict:
@@ -204,6 +213,7 @@ def make_case_spec(weight_class: dict, direction_key: str, direction: dict) -> C
         sign=1 if as_int(direction.get("sign"), "direction sign") >= 0 else -1,
         velocity=as_float(weight_class.get("velocity"), "velocity"),
         acceleration=as_float(weight_class.get("acceleration", 0.0), "acceleration"),
+        shock_time_ms=as_float(weight_class.get("shock_time_ms", 11.0), "shock time"),
     )
 
 
@@ -220,6 +230,12 @@ def render_boundary_lines_with_base(spec: CaseSpec, base_acceleration: float) ->
         value = -spec.sign * base_acceleration if dof == spec.axis else 0.0
         lines.append(f"Nset_SHOCK_BC, {dof}, {dof}, {format_num(value)}")
     return "\n".join(lines)
+
+
+def shock_amplitude_times(shock_time_ms: float) -> tuple[float, float]:
+    plateau_end = 0.0001 + shock_time_ms / 1000.0
+    zero_time = plateau_end + 0.0001
+    return plateau_end, zero_time
 
 
 def direction_vector(spec: CaseSpec) -> tuple[str, str, str]:
@@ -276,6 +292,7 @@ def render_inp(
     field_interval = advanced["field_output_interval"]
     gravity = advanced["gravity"]
     velocity_value = spec.sign * spec.velocity
+    amplitude_plateau_end, amplitude_zero_time = shock_amplitude_times(spec.shock_time_ms)
     boundary_lines = render_boundary_lines_with_base(spec, as_float(gravity, "gravity"))
     gravity_x, gravity_y, gravity_z = direction_vector(spec)
     output_requests = render_output_requests(
@@ -295,8 +312,8 @@ def render_inp(
 *Amplitude, name=Amp-1
 0.,                  0.,
 0.0001,              {format_num(spec.acceleration)},
-0.0111,              {format_num(spec.acceleration)},
-0.0112,               0.,
+{format_num(amplitude_plateau_end)},              {format_num(spec.acceleration)},
+{format_num(amplitude_zero_time)},               0.,
 {analysis_time},               0.,
 ** Initial velocity, direction={spec.direction_label}, axis={spec.axis}
 *Initial Conditions, type=VELOCITY
@@ -505,11 +522,23 @@ def hw_component_name(block: list[str]) -> str:
     return ""
 
 
-def wood_components_to_remove(direction_key: str) -> set[str]:
-    keep_group = DIRECTION_WOOD_COMPONENT.get(direction_key)
-    if not keep_group:
+def components_to_remove(
+    direction_key: str,
+    components: dict[str, str],
+    direction_component: dict[str, str],
+) -> set[str]:
+    keep_key = direction_component.get(direction_key)
+    if not keep_key:
         return set()
-    return {name for group, name in WOOD_COMPONENTS.items() if group != keep_group}
+    return {name for key, name in components.items() if key != keep_key}
+
+
+def wood_components_to_remove(direction_key: str) -> set[str]:
+    return components_to_remove(direction_key, WOOD_COMPONENTS, DIRECTION_WOOD_COMPONENT)
+
+
+def package_drop_components_to_remove(direction_key: str) -> set[str]:
+    return components_to_remove(direction_key, PACKAGE_DROP_COMPONENTS, {key: key for key in PACKAGE_DROP_COMPONENTS})
 
 
 def read_model_text(model_path: Path) -> str:
@@ -530,13 +559,13 @@ def parse_int_tokens(line: str) -> list[int]:
     return values
 
 
-def c3d8i_connectivity(block: list[str]) -> dict[int, set[int]]:
+def element_connectivity(block: list[str]) -> dict[int, set[int]]:
     elements: dict[int, set[int]] = {}
     for line in block[1:]:
         if line.lstrip().startswith("**"):
             continue
         values = parse_int_tokens(line)
-        if len(values) >= 9:
+        if len(values) >= 2:
             elements[values[0]] = set(values[1:])
     return elements
 
@@ -608,8 +637,7 @@ def filter_id_set_block(block: list[str], ids_to_delete: set[int]) -> list[str]:
     return output if changed else block
 
 
-def filter_model_for_direction(model_text: str, direction_key: str) -> str:
-    remove_components = wood_components_to_remove(direction_key)
+def filter_model_components_for_direction(model_text: str, direction_key: str, remove_components: set[str]) -> str:
     if not remove_components:
         return model_text
 
@@ -646,10 +674,9 @@ def filter_model_for_direction(model_text: str, direction_key: str) -> str:
             remove_block = True
             skip_instance = True
         elif name == "*element":
-            block_nodes = c3d8i_connectivity(block)
-            element_type = keyword_param(header, "type").lower()
+            block_nodes = element_connectivity(block)
             component_reference = component_name or header
-            if element_type == "c3d8i" and component_token_match(component_reference, remove_components):
+            if component_token_match(component_reference, remove_components):
                 remove_block = True
                 removed_elements.update(block_nodes)
                 for nodes in block_nodes.values():
@@ -684,8 +711,20 @@ def filter_model_for_direction(model_text: str, direction_key: str) -> str:
     return "".join(output_lines)
 
 
+def filter_model_for_direction(model_text: str, direction_key: str) -> str:
+    return filter_model_components_for_direction(model_text, direction_key, wood_components_to_remove(direction_key))
+
+
+def filter_package_drop_model_for_direction(model_text: str, direction_key: str) -> str:
+    return filter_model_components_for_direction(model_text, direction_key, package_drop_components_to_remove(direction_key))
+
+
 def build_direction_model_text(model_path: Path, direction_key: str) -> str:
     return filter_model_for_direction(read_model_text(model_path), direction_key)
+
+
+def build_package_drop_model_text(model_path: Path, direction_key: str) -> str:
+    return filter_package_drop_model_for_direction(read_model_text(model_path), direction_key)
 
 
 def generate_case(
@@ -715,7 +754,7 @@ def generate_case(
 
     case_dir.mkdir(parents=True, exist_ok=True)
     if case_type == CASE_TYPE_PACKAGE_DROP:
-        shutil.copy2(model_path, case_dir / MODEL_COPY_NAME)
+        (case_dir / MODEL_COPY_NAME).write_text(build_package_drop_model_text(model_path, spec.direction_key), encoding="utf-8")
     else:
         (case_dir / MODEL_COPY_NAME).write_text(build_direction_model_text(model_path, spec.direction_key), encoding="utf-8")
     boundary_path = case_dir / f"{spec.job_name}.inp"
@@ -773,7 +812,7 @@ class StandardsEditor(Toplevel):
         ttk.Label(right, text="Weight classes").pack(anchor="w", pady=(8, 0))
         self.weight_tree = ttk.Treeview(
             right,
-            columns=("name", "prefix", "velocity", "acceleration"),
+            columns=("name", "prefix", "velocity", "acceleration", "shock_time_ms"),
             show="headings",
             height=10,
         )
@@ -784,6 +823,7 @@ class StandardsEditor(Toplevel):
         ]
         if self.uses_acceleration:
             columns.append(("acceleration", "Acceleration", 110))
+            columns.append(("shock_time_ms", "Shock time ms", 110))
         else:
             self.weight_tree["displaycolumns"] = ("name", "prefix", "velocity")
         for column, label, width in columns:
@@ -835,6 +875,7 @@ class StandardsEditor(Toplevel):
                     weight.get("job_prefix", ""),
                     weight.get("velocity", ""),
                     weight.get("acceleration", ""),
+                    weight.get("shock_time_ms", 11.0),
                 ),
             )
 
@@ -896,6 +937,14 @@ class StandardsEditor(Toplevel):
         ) if self.uses_acceleration else None
         if self.uses_acceleration and acceleration is None:
             return None
+        shock_time_ms = simpledialog.askfloat(
+            "Weight Class",
+            "Shock time (ms):",
+            initialvalue=float(initial.get("shock_time_ms", 11.0) or 11.0),
+            parent=self,
+        ) if self.uses_acceleration else None
+        if self.uses_acceleration and shock_time_ms is None:
+            return None
         weight = {
             "name": name.strip(),
             "job_prefix": safe_name(prefix),
@@ -903,6 +952,7 @@ class StandardsEditor(Toplevel):
         }
         if self.uses_acceleration:
             weight["acceleration"] = acceleration
+            weight["shock_time_ms"] = shock_time_ms
         return weight
 
     def add_weight(self) -> None:
@@ -1361,8 +1411,26 @@ def self_test() -> None:
         assert "Nset_SHOCK_BC, 2, 2, -9810." in text
         assert "ALL_Element, GRAV, 9810., 0., 1., 0." in text
         assert f"0.0001,              {format_num(spec.acceleration)}" in text
+        assert "0.0111,              " in text
+        assert "0.0112,               0.," in text
         assert "*CONTACT OUTPUT" not in text
         assert "*INTEGRATED OUTPUT" not in text
+        ten_one_ms_spec = make_case_spec(
+            {"name": "15_30kg", "job_prefix": "ByteDance_15_30kg_shock", "velocity": 3962.0, "acceleration": 40.0, "shock_time_ms": 10.1},
+            "up",
+            cfg["directions"]["up"],
+        )
+        nine_one_ms_spec = make_case_spec(
+            {"name": "40_45kg", "job_prefix": "ByteDance_40_45kg_shock", "velocity": 3132.0, "acceleration": 35.0, "shock_time_ms": 9.1},
+            "up",
+            cfg["directions"]["up"],
+        )
+        ten_one_ms_text = render_inp(ten_one_ms_spec, DEFAULT_ADVANCED)
+        nine_one_ms_text = render_inp(nine_one_ms_spec, DEFAULT_ADVANCED)
+        assert "0.0102,              40.," in ten_one_ms_text
+        assert "0.0103,               0.," in ten_one_ms_text
+        assert "0.0092,              35.," in nine_one_ms_text
+        assert "0.0093,               0.," in nine_one_ms_text
         left_spec = make_case_spec(weight, "left", {"label": "Left", "axis": 1, "sign": 1})
         right_spec = make_case_spec(weight, "right", {"label": "Right", "axis": 1, "sign": -1})
         back_spec = make_case_spec(weight, "back", {"label": "Back", "axis": 3, "sign": 1})
@@ -1544,6 +1612,60 @@ def self_test() -> None:
         assert "\n11,0,0,0" in hw_up_text
         assert "\n1,0,0,0" not in hw_up_text
         assert "\n21,0,0,0" not in hw_up_text
+
+        package_model = temp / "package_component_model.inp"
+        package_model.write_text(
+            """*Node
+1,0,0,0
+2,1,0,0
+3,1,1,0
+4,0,1,0
+5,0,0,1
+6,1,0,1
+7,1,1,1
+8,0,1,1
+11,0,0,0
+12,1,0,0
+13,1,1,0
+14,0,1,0
+15,0,0,1
+16,1,0,1
+17,1,1,1
+18,0,1,1
+21,0,0,0
+22,1,0,0
+23,1,1,0
+24,0,1,0
+25,0,0,1
+26,1,0,1
+27,1,1,1
+28,0,1,1
+**HW_COMPONENT     ID=1     NAME=UP_2D_TT0p1_STEEL
+*Element, type=S4R, elset=DROP_STEEL
+201,11,12,13,14
+**HW_COMPONENT     ID=2     NAME=DOWN_2D_TT0p1_STEEL
+*Element, type=S4, elset=DROP_STEEL
+301,21,22,23,24
+**HW_COMPONENT     ID=3     NAME=LEFT_2D_TT0p1_STEEL
+*Element, type=S4, elset=DROP_STEEL
+101,1,2,3,4
+*Nset, nset=ALL_Nset
+1,2,3,4,5,6,7,8,11,12,13,14,15,16,17,18,21,22,23,24,25,26,27,28
+*Elset, elset=ALL_Element
+101,201,301
+""",
+            encoding="utf-8",
+        )
+        package_up_text = build_package_drop_model_text(package_model, "up")
+        assert "UP_2D_TT0p1_STEEL" in package_up_text
+        assert "DOWN_2D_TT0p1_STEEL" not in package_up_text
+        assert "LEFT_2D_TT0p1_STEEL" not in package_up_text
+        assert "201" in package_up_text
+        assert "101" not in package_up_text
+        assert "301" not in package_up_text
+        assert "\n11,0,0,0" in package_up_text
+        assert "\n1,0,0,0" not in package_up_text
+        assert "\n21,0,0,0" not in package_up_text
     print("self-test passed")
 
 

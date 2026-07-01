@@ -46,6 +46,7 @@ Shock weight classes define:
 - `job_prefix`
 - `velocity`
 - `acceleration` shock acceleration / amplitude peak, such as `40.0` for the reference case
+- `shock_time_ms` acceleration plateau duration in milliseconds
 
 Package-drop weight classes define:
 

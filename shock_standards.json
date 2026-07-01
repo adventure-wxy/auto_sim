@@ -40,37 +40,43 @@
           "name": "4kg",
           "job_prefix": "Lenovo_4kg_Shock",
           "velocity": 4572.0,
-          "acceleration": 50.0
+          "acceleration": 50.0,
+          "shock_time_ms": 9.3
         },
         {
           "name": "4_12kg",
           "job_prefix": "Lenovo_4_12kg_shock",
           "velocity": 4242.0,
-          "acceleration": 50.0
+          "acceleration": 50.0,
+          "shock_time_ms": 8.7
         },
         {
           "name": "12_23kg",
           "job_prefix": "Lenovo_12_23kg_shock",
           "velocity": 3861.0,
-          "acceleration": 50.0
+          "acceleration": 50.0,
+          "shock_time_ms": 7.9
         },
         {
           "name": "23_32kg",
           "job_prefix": "Lenovo_23_32kg_shock",
           "velocity": 3861.0,
-          "acceleration": 35.0
+          "acceleration": 35.0,
+          "shock_time_ms": 11.2
         },
         {
           "name": "32_69kg",
           "job_prefix": "Lenovo_32_69kg_shock",
           "velocity": 3454.0,
-          "acceleration": 35.0
+          "acceleration": 35.0,
+          "shock_time_ms": 10.1
         },
         {
           "name": "69_107kg",
           "job_prefix": "Lenovo_69_107kg_shock",
           "velocity": 2995.0,
-          "acceleration": 25.0
+          "acceleration": 25.0,
+          "shock_time_ms": 12.2
         }
       ]
     },
@@ -82,37 +88,43 @@
           "name": "15kg",
           "job_prefix": "ByteDance_15kg_shock",
           "velocity": 4429.0,
-          "acceleration": 40.0
+          "acceleration": 40.0,
+          "shock_time_ms": 11.267
         },
         {
           "name": "15_30kg",
           "job_prefix": "ByteDance_15_30kg_shock",
           "velocity": 3962.0,
-          "acceleration": 40.0
+          "acceleration": 40.0,
+          "shock_time_ms": 10.1
         },
         {
           "name": "30_40kg",
           "job_prefix": "ByteDance_30_40kg_shcok",
           "velocity": 3431.0,
-          "acceleration": 40.0
+          "acceleration": 40.0,
+          "shock_time_ms": 8.742
         },
         {
           "name": "40_45kg",
           "job_prefix": "ByteDance_40_45kg_shock",
           "velocity": 3132.0,
-          "acceleration": 35.0
+          "acceleration": 35.0,
+          "shock_time_ms": 9.1
         },
         {
           "name": "45_50kg",
           "job_prefix": "ByteDance_45_50kg_shock",
           "velocity": 2801.0,
-          "acceleration": 35.0
+          "acceleration": 35.0,
+          "shock_time_ms": 8.14
         },
         {
           "name": "50kg",
           "job_prefix": "ByteDance_50kg_shock",
           "velocity": 2426.0,
-          "acceleration": 30.0
+          "acceleration": 30.0,
+          "shock_time_ms": 8.288
         }
       ]
     },
@@ -124,19 +136,22 @@
           "name": "40kg",
           "job_prefix": "Ali_40kg_shock",
           "velocity": 4315.0,
-          "acceleration": 40.0
+          "acceleration": 40.0,
+          "shock_time_ms": 11.0
         },
         {
           "name": "40_50kg",
           "job_prefix": "Ali_40_50kg_shock",
           "velocity": 3432.0,
-          "acceleration": 35.0
+          "acceleration": 35.0,
+          "shock_time_ms": 10.0
         },
         {
           "name": "50kg",
           "job_prefix": "Ali_50kg_shock",
           "velocity": 2648.0,
-          "acceleration": 30.0
+          "acceleration": 30.0,
+          "shock_time_ms": 9.0
         }
       ]
     }
@@ -225,15 +240,14 @@
     "case_type": "Shock",
     "model_path": "D:/CAE/AutoSim/auto_sim/model/SHOCK_Model.inp",
     "output_root": "D:/CAE/AutoSim/auto_sim/model/",
-    "standard": "Lenovo",
-    "weight": "23_32kg",
+    "standard": "ByteDance",
+    "weight": "30_40kg",
     "directions": [
-      "up",
-      "down"
+      "up"
     ],
     "conflict_strategy": "overwrite",
-    "submit_after_generate": true,
-    "rewrite_boundary_file": true,
+    "submit_after_generate": false,
+    "rewrite_boundary_file": false,
     "contact_surface_names": [],
     "section_names": [],
     "advanced": {
